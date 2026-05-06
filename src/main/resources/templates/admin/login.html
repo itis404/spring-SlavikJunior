@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Вход — Coffee Shop Admin</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-card { background: #fff; border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+        .login-logo { text-align: center; font-size: 32px; margin-bottom: 8px; }
+        .login-title { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+        .login-subtitle { text-align: center; font-size: 13px; color: #6b7280; margin-bottom: 28px; }
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #374151; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .15s; }
+        input:focus { border-color: #1a1a1a; }
+        .field { margin-bottom: 16px; }
+        .btn-login { width: 100%; padding: 11px; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity .15s; }
+        .btn-login:hover { opacity: .85; }
+        .alert { padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+        .alert-error { background: #fee2e2; color: #991b1b; }
+        .alert-success { background: #d1fae5; color: #065f46; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <div class="login-logo">☕</div>
+    <div class="login-title">Coffee Shop Admin</div>
+    <div class="login-subtitle">Панель управления кофейней</div>
+
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${logout}" class="alert alert-success">Вы вышли из системы</div>
+
+    <form th:action="@{/admin/login}" method="post">
+        <div class="field">
+            <label for="username">Телефон</label>
+            <input type="text" id="username" name="username" placeholder="+79001234567" autocomplete="username"/>
+        </div>
+        <div class="field">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" autocomplete="current-password"/>
+        </div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" class="btn-login">Войти</button>
+    </form>
+</div>
+</body>
+</html>
