@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(pageTitle='Меню — форма')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar(activePage='menu')}"></div>
+<div class="main">
+
+    <div class="page-header" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <a th:href="@{/admin/menu}" class="btn btn-secondary btn-sm">← Назад</a>
+        <h1 th:text="${item != null} ? 'Редактировать позицию' : 'Новая позиция'"></h1>
+    </div>
+
+    <form th:action="${item != null} ? @{/admin/menu/{id}/edit(id=${item.id})} : @{/admin/menu/new}"
+          method="post" th:object="${form}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;max-width:980px;align-items:start;">
+
+            <!-- LEFT: основные поля -->
+            <div class="card">
+                <p style="font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px;">Основная информация</p>
+
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Название *</label>
+                    <input type="text" th:field="*{name}" placeholder="Например, Латте"
+                           style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;"/>
+                    <div th:if="${#fields.hasErrors('name')}" style="color:#ef4444;font-size:12px;margin-top:4px;" th:errors="*{name}"></div>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Категория *</label>
+                    <select th:field="*{category}" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;background:#fff;">
+                        <option value="">-- Выберите --</option>
+                        <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('category')}" style="color:#ef4444;font-size:12px;margin-top:4px;" th:errors="*{category}"></div>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Описание</label>
+                    <textarea th:field="*{description}" rows="3" placeholder="Краткое описание напитка"
+                              style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;resize:vertical;"></textarea>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Объёмы (мл)</label>
+                        <input type="text" th:field="*{volumes}" placeholder="250,350,450"
+                               style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;"/>
+                        <div style="font-size:11px;color:#9ca3af;margin-top:3px;">через запятую</div>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Цены (₽)</label>
+                        <input type="text" th:field="*{prices}" placeholder="230,260,290"
+                               style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;"/>
+                        <div style="font-size:11px;color:#9ca3af;margin-top:3px;">в том же порядке</div>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:24px;padding-top:4px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+                        <input type="checkbox" th:field="*{isAvailable}"
+                               style="width:16px;height:16px;accent-color:#1a1a1a;cursor:pointer;"/>
+                        В наличии
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+                        <input type="checkbox" th:field="*{isHidden}"
+                               style="width:16px;height:16px;accent-color:#1a1a1a;cursor:pointer;"/>
+                        Скрыть из меню
+                    </label>
+                </div>
+            </div>
+
+            <!-- RIGHT: фото + модификаторы -->
+            <div style="display:flex;flex-direction:column;gap:20px;">
+
+                <!-- Фотография -->
+                <div class="card">
+                    <p style="font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Фотография</p>
+
+                    <input type="hidden" th:field="*{photoUrl}" id="photoUrlInput"/>
+
+                    <div id="photo-preview-wrap"
+                         th:style="${#strings.isEmpty(form.photoUrl)} ? 'display:none;margin-bottom:12px;' : 'margin-bottom:12px;'">
+                        <img id="photoPreviewImg" th:src="${form.photoUrl ?: ''}"
+                             style="width:100%;max-height:200px;border-radius:6px;border:1px solid #e5e7eb;object-fit:cover;"/>
+                    </div>
+
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <label style="display:inline-flex;align-items:center;padding:6px 14px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;margin:0;">
+                            Загрузить
+                            <input type="file" id="photoFileInput" accept="image/*" style="display:none;"/>
+                        </label>
+                        <button type="button" id="clearPhotoBtn"
+                                style="padding:6px 14px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">
+                            Очистить
+                        </button>
+                    </div>
+                    <div id="photoUploadStatus" style="font-size:12px;color:#6b7280;margin-top:6px;min-height:16px;"></div>
+                </div>
+
+                <!-- Модификаторы -->
+                <div class="card" th:if="${not #lists.isEmpty(modifierGroups)}">
+                    <p style="font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Модификаторы</p>
+
+                    <div th:each="group : ${modifierGroups}" style="margin-bottom:16px;">
+                        <div style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;"
+                             th:text="${
+                                group.key == 'SYRUP'       ? 'Сиропы' :
+                                group.key == 'MARSHMALLOW' ? 'Маршмеллоу' :
+                                group.key == 'ALT_MILK'    ? 'Альт. молоко' : 'Вит. шот'
+                             }"></div>
+
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label th:each="mod : ${group.modifiers}"
+                                   style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;font-size:13px;">
+                                <input type="checkbox" name="modifierIds"
+                                       th:value="${mod.id}"
+                                       th:checked="${#lists.contains(form.modifierIds, mod.id)}"
+                                       style="width:15px;height:15px;accent-color:#1a1a1a;cursor:pointer;flex-shrink:0;"/>
+                                <span th:text="${mod.name}" style="flex:1;"></span>
+                                <span th:text="${'+' + mod.price + ' ₽'}"
+                                      style="font-size:12px;color:#6b7280;font-family:monospace;"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:8px;margin-top:20px;max-width:980px;">
+            <button type="submit" class="btn btn-primary"
+                    th:text="${item != null} ? 'Сохранить изменения' : 'Добавить позицию'">Добавить позицию</button>
+            <a th:href="@{/admin/menu}" class="btn btn-secondary">Отмена</a>
+        </div>
+
+    </form>
+</div>
+<script th:src="@{/js/admin/menu-form.js}"></script>
+</body>
+</html>
