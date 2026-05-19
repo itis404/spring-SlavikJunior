@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(pageTitle='Аналитика')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar(activePage='analytics')}"></div>
+<div class="main">
+    <div class="page-header"><h1>Аналитика</h1></div>
+
+    <!-- KPI cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+        <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:700;" th:text="${analytics.totalRevenue} + ' ₽'"></div>
+            <div style="font-size:13px;color:#6b7280;margin-top:4px;">Выручка</div>
+        </div>
+        <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:700;" th:text="${analytics.totalOrders}"></div>
+            <div style="font-size:13px;color:#6b7280;margin-top:4px;">Заказов выполнено</div>
+        </div>
+        <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:700;" th:text="${#numbers.formatDecimal(analytics.averageCheck, 1, 0)} + ' ₽'"></div>
+            <div style="font-size:13px;color:#6b7280;margin-top:4px;">Средний чек</div>
+        </div>
+        <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:700;" th:text="${#numbers.formatDecimal(analytics.averageRating, 1, 1)} + ' ★'"></div>
+            <div style="font-size:13px;color:#6b7280;margin-top:4px;">Средняя оценка</div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <!-- Popular items -->
+        <div class="card">
+            <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">Топ позиции</h2>
+            <table>
+                <thead><tr><th>Позиция</th><th>Заказов</th><th>Выручка</th></tr></thead>
+                <tbody>
+                <tr th:each="item : ${analytics.popularItems}">
+                    <td th:text="${item.name}"></td>
+                    <td th:text="${item.orderCount}"></td>
+                    <td th:text="${item.revenue} + ' ₽'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent completed orders -->
+        <div class="card">
+            <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">Последние заказы</h2>
+            <table>
+                <thead><tr><th>#</th><th>Сумма</th><th>Дата</th></tr></thead>
+                <tbody>
+                <tr th:each="order : ${analytics.recentOrders}">
+                    <td th:text="${order.id}"></td>
+                    <td th:text="${order.totalPrice} + ' ₽'"></td>
+                    <td th:text="${#temporals.format(order.createdAt, 'dd.MM HH:mm')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
