@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Уведомления — Admin')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar('notifications')}"></div>
+<div class="main">
+    <div class="page-header">
+        <h1>Отправить уведомление</h1>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="card" style="max-width:560px;">
+        <form th:action="@{/admin/notifications/send}" method="post" id="notif-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:10px;">Кому отправить</label>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+                        <input type="radio" name="sendType" value="BROADCAST" checked/>
+                        <span><strong>Всем</strong> — broadcast всем устройствам с FCM-токеном</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+                        <input type="radio" name="sendType" value="BY_PHONE"/>
+                        <span><strong>По номеру телефона</strong></span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+                        <input type="radio" name="sendType" value="BY_TOKEN"/>
+                        <span><strong>По FCM-токену</strong></span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="field-phone" style="margin-bottom:16px;display:none;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Номер телефона (E.164)</label>
+                <input type="tel" name="phone" placeholder="+79161234567"
+                       style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;font-family:monospace;"/>
+                <p style="font-size:12px;color:#6b7280;margin-top:4px;">Формат: +79161234567</p>
+            </div>
+
+            <div id="field-token" style="margin-bottom:16px;display:none;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">FCM-токен устройства</label>
+                <input type="text" name="fcmToken" placeholder="dGhpcyBpcyBhIHRlc3Q..."
+                       style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;font-family:monospace;"/>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Заголовок *</label>
+                <input type="text" name="title" required placeholder="Специальное предложение"
+                       style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;"/>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Текст сообщения *</label>
+                <textarea name="body" required rows="3" placeholder="Скидка 20% на все напитки сегодня!"
+                          style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;resize:vertical;"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Отправить уведомление</button>
+        </form>
+    </div>
+
+    <div class="card" style="max-width:560px;">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;color:#6b7280;">Пользователи (для справки)</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Телефон</th>
+                <th>ID</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.name}"></td>
+                <td>
+                    <code style="font-size:12px;cursor:pointer;" data-fill-phone="true"
+                          th:text="${user.phone}" title="Нажмите чтобы вставить номер"></code>
+                </td>
+                <td th:text="${user.id}" style="color:#6b7280;font-size:12px;"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="3" style="text-align:center;color:#9ca3af;padding:16px;">Нет пользователей</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script th:src="@{/js/admin/notifications-index.js}"></script>
+</body>
+</html>

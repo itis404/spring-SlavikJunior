@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(pageTitle='Меню')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar(activePage='menu')}"></div>
+<div class="main">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h1>Меню</h1>
+        <a th:href="@{/admin/menu/new}" class="btn btn-primary">+ Добавить позицию</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div id="ajax-message" class="alert" style="display:none;"></div>
+
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>Название</th>
+                <th>Категория</th>
+                <th>Объёмы / Цены</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${items}">
+                <td>
+                    <strong th:text="${item.name}"></strong>
+                    <div th:if="${item.description}" style="font-size:12px;color:#6b7280;" th:text="${item.description}"></div>
+                </td>
+                <td>
+                    <span class="badge badge-gray" th:text="${item.category}"></span>
+                </td>
+                <td style="font-size:12px;">
+                    <span th:each="vol, stat : ${item.volumeEntries}">
+                        <th:block th:text="${vol.volumeMl} + 'мл — ' + ${vol.price} + '₽'"></th:block>
+                        <br th:if="${!stat.last}"/>
+                    </span>
+                </td>
+                <td>
+                    <span th:if="${item.isAvailable && !item.isHidden}" class="badge badge-green">Доступен</span>
+                    <span th:if="${!item.isAvailable}" class="badge badge-red">Нет в наличии</span>
+                    <span th:if="${item.isHidden}" class="badge badge-gray">Скрыт</span>
+                    <span th:if="${item.isSeasonal}" class="badge badge-gray" style="background:#fef3c7;color:#92400e;">Сезонный</span>
+                    <div th:if="${item.isSeasonal && item.validTo != null}" style="font-size:11px;color:#6b7280;margin-top:2px;">
+                        до <span th:text="${#temporals.format(item.validTo, 'dd.MM.yy')}"></span>
+                    </div>
+                </td>
+                <td style="white-space:nowrap;">
+                    <a th:href="@{/admin/menu/{id}/edit(id=${item.id})}" class="btn btn-secondary btn-sm">Изменить</a>
+                    <button type="button"
+                            class="btn btn-sm toggle-btn"
+                            th:classappend="${item.isAvailable} ? 'btn-danger' : 'btn-success'"
+                            th:text="${item.isAvailable} ? 'Убрать' : 'Вернуть'"
+                            th:data-item-id="${item.id}">
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script th:src="@{/js/admin/menu-index.js}"></script>
+</body>
+</html>

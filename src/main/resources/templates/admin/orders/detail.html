@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(pageTitle='Заказ #' + ${order.id})}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar(activePage='orders')}"></div>
+<div class="main">
+    <div class="page-header" style="display:flex;align-items:center;gap:16px;">
+        <a th:href="@{/admin/orders}" class="btn btn-secondary btn-sm">← Назад</a>
+        <h1 th:text="'Заказ #' + ${order.id}"></h1>
+        <span class="badge"
+              th:classappend="${order.orderStatus.name() == 'PAID'} ? 'badge-yellow' :
+                              (${order.orderStatus.name() == 'PREPARING'} ? 'badge-blue' :
+                              (${order.orderStatus.name() == 'READY'} ? 'badge-green' : 'badge-gray'))"
+              th:text="${order.orderStatus}">
+        </span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+        <!-- Order info -->
+        <div class="card">
+            <h2 style="font-size:15px;font-weight:600;margin-bottom:16px;">Информация о заказе</h2>
+            <table style="font-size:14px;">
+                <tr><td style="color:#6b7280;padding-right:16px;">Клиент</td><td th:text="${order.userName}"></td></tr>
+                <tr><td style="color:#6b7280;">Телефон</td><td th:text="${order.userPhone}"></td></tr>
+                <tr><td style="color:#6b7280;">Сумма</td><td th:text="${order.totalPrice} + ' ₽'"></td></tr>
+                <tr><td style="color:#6b7280;">Оплата</td><td th:text="${order.paymentStatus}"></td></tr>
+                <tr><td style="color:#6b7280;">Время</td><td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td></tr>
+                <tr th:if="${order.comment}"><td style="color:#6b7280;">Комментарий</td><td th:text="${order.comment}"></td></tr>
+                <tr th:if="${order.receiptPhotoUrl}">
+                    <td style="color:#6b7280;">Фото на чек</td>
+                    <td><a th:href="${order.receiptPhotoUrl}" target="_blank">Открыть</a></td>
+                </tr>
+            </table>
+
+            <h3 style="font-size:13px;font-weight:600;margin:16px 0 8px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;">Состав</h3>
+            <div th:each="item : ${order.items}" style="font-size:14px;padding:6px 0;border-bottom:1px solid #f0f0f0;">
+                <span th:text="${item.menuItemName} + ' ×' + ${item.quantity}"></span>
+                <span style="color:#6b7280;font-size:12px;" th:text="' — ' + ${item.volumeMl} + ' мл'"></span>
+                <div th:if="${!#lists.isEmpty(item.modifiers)}" style="font-size:12px;color:#6b7280;padding-left:8px;">
+                    <span th:each="mod, stat : ${item.modifiers}">
+                        <th:block th:text="${mod}"></th:block>
+                        <th:block th:if="${!stat.last}">, </th:block>
+                    </span>
+                </div>
+                <div th:if="${item.comment}" style="font-size:12px;color:#6b7280;padding-left:8px;font-style:italic;" th:text="${item.comment}"></div>
+            </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="card" style="display:flex;flex-direction:column;">
+            <h2 style="font-size:15px;font-weight:600;margin-bottom:12px;">Чат с клиентом</h2>
+
+            <div id="chat-messages"
+                 style="flex:1;overflow-y:auto;max-height:360px;display:flex;flex-direction:column;gap:8px;padding:4px 0;margin-bottom:12px;"
+                 th:data-order-id="${order.id}">
+
+                <div th:each="msg : ${messages}"
+                     th:classappend="${msg.senderRole == 'ADMIN'} ? 'msg-admin' : 'msg-client'"
+                     th:data-msg-id="${msg.id}"
+                     class="msg-bubble">
+                    <span class="msg-text" th:text="${msg.text}"></span>
+                    <span class="msg-time" th:text="${#strings.substring(msg.sentAt, 11, 16)}"></span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(messages)}" style="color:#9ca3af;font-size:13px;text-align:center;padding:24px 0;">
+                    Сообщений пока нет
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;">
+                <input id="chat-input" type="text" placeholder="Сообщение баристы..."
+                       style="flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;outline:none;"
+                       maxlength="1000"/>
+                <button id="chat-send" class="btn btn-primary btn-sm" style="padding:8px 16px;">Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.msg-bubble {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 14px; max-width: 100%;
+}
+.msg-admin { background: #1a1a1a; color: #fff; align-self: flex-end; }
+.msg-client { background: #f3f4f6; color: #1a1a1a; align-self: flex-start; }
+.msg-time { font-size: 11px; opacity: .6; white-space: nowrap; flex-shrink: 0; }
+</style>
+
+<script th:src="@{/js/admin/orders-detail.js}"></script>
+</body>
+</html>

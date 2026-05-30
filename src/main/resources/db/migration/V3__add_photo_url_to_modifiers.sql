@@ -1,0 +1,1 @@
+ALTER TABLE modifiers ADD COLUMN photo_url VARCHAR(512);

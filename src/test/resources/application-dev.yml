@@ -1,0 +1,15 @@
+# Test overrides for the dev profile — disables Redis so tests run without a Redis instance.
+spring:
+  cache:
+    type: none
+  session:
+    store-type: none
+  data:
+    redis:
+      # Prevents eager connection attempts during context load
+      lazy-connect: true
+
+app:
+  jwt:
+    # Dedicated test secret — NOT the default placeholder, satisfies the >=32 byte requirement
+    secret: "test-secret-key-for-unit-tests-only-not-for-production"

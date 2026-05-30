@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(pageTitle='Заказы')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar(activePage='orders')}"></div>
+<div class="main">
+    <div class="page-header" style="display:flex;align-items:center;gap:16px;">
+        <h1>Заказы</h1>
+        <button id="shop-toggle"
+                class="btn btn-sm"
+                th:classappend="${shopIsOpen} ? 'btn-success' : 'btn-danger'"
+                th:text="${shopIsOpen} ? 'Магазин открыт' : 'Магазин закрыт'">
+        </button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <!-- Paid (new) orders — barista must pick up -->
+    <div class="card">
+        <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">
+            Новые заказы
+            <span class="badge badge-yellow" style="margin-left:8px;" th:text="${#lists.size(paidOrders)}"></span>
+        </h2>
+        <div th:if="${#lists.isEmpty(paidOrders)}" style="color:#6b7280;font-size:14px;">Нет новых заказов</div>
+        <table th:if="${!#lists.isEmpty(paidOrders)}">
+            <thead>
+            <tr>
+                <th>#</th><th>Клиент</th><th>Сумма</th><th>Позиций</th><th>Время</th><th>Действие</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${paidOrders}">
+                <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" th:text="${order.id}"></a></td>
+                <td th:text="${order.userName}"></td>
+                <td th:text="${order.totalPrice} + ' ₽'"></td>
+                <td th:text="${#lists.size(order.items)}"></td>
+                <td th:text="${#temporals.format(order.createdAt, 'HH:mm')}"></td>
+                <td>
+                    <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline">
+                        <input type="hidden" name="status" value="PREPARING"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-primary btn-sm">Принять</button>
+                    </form>
+                    <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline" style="margin-left:6px;">
+                        <input type="hidden" name="status" value="CANCELLED"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-danger btn-sm">Отклонить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Preparing orders -->
+    <div class="card">
+        <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">
+            Готовятся
+            <span class="badge badge-blue" style="margin-left:8px;" th:text="${#lists.size(preparingOrders)}"></span>
+        </h2>
+        <div th:if="${#lists.isEmpty(preparingOrders)}" style="color:#6b7280;font-size:14px;">Нет заказов в работе</div>
+        <table th:if="${!#lists.isEmpty(preparingOrders)}">
+            <thead>
+            <tr><th>#</th><th>Клиент</th><th>Состав</th><th>Сумма</th><th>Действие</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${preparingOrders}">
+                <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" th:text="${order.id}"></a></td>
+                <td th:text="${order.userName}"></td>
+                <td>
+                    <span th:each="item, stat : ${order.items}">
+                        <th:block th:text="${item.menuItemName} + ' ×' + ${item.quantity}"></th:block>
+                        <th:block th:if="${!stat.last}">, </th:block>
+                    </span>
+                </td>
+                <td th:text="${order.totalPrice} + ' ₽'"></td>
+                <td>
+                    <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline">
+                        <input type="hidden" name="status" value="READY"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-success btn-sm">Готово</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Ready orders -->
+    <div class="card">
+        <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">
+            Готовы к выдаче
+            <span class="badge badge-green" style="margin-left:8px;" th:text="${#lists.size(readyOrders)}"></span>
+        </h2>
+        <div th:if="${#lists.isEmpty(readyOrders)}" style="color:#6b7280;font-size:14px;">Нет заказов</div>
+        <table th:if="${!#lists.isEmpty(readyOrders)}">
+            <thead>
+            <tr><th>#</th><th>Клиент</th><th>Сумма</th><th>Действие</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${readyOrders}">
+                <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" th:text="${order.id}"></a></td>
+                <td th:text="${order.userName}"></td>
+                <td th:text="${order.totalPrice} + ' ₽'"></td>
+                <td>
+                    <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline">
+                        <input type="hidden" name="status" value="COMPLETED"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-secondary btn-sm">Выдан</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script th:src="@{/js/admin/orders-index.js}"></script>
+    <script th:src="@{/js/admin/shop-toggle.js}"></script>
+</div>
+</body>
+</html>

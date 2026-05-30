@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Пользователи — Admin')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar('users')}"></div>
+<div class="main">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h1>Пользователи</h1>
+        <a th:href="@{/admin/users/new}" class="btn btn-primary">+ Создать пользователя</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Бонусы</th>
+                <th>Дата регистрации</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}" style="color:#6b7280;font-size:12px;"></td>
+                <td th:text="${user.name}"></td>
+                <td th:text="${user.phone}" style="font-family:monospace;font-size:13px;"></td>
+                <td th:text="${user.email ?: '—'}" style="color:#6b7280;"></td>
+                <td>
+                    <span th:text="${user.role}"
+                          th:classappend="${user.role.name() == 'ADMIN'} ? 'badge badge-blue' : 'badge badge-gray'"></span>
+                </td>
+                <td th:text="${user.bonusPoints}"></td>
+                <td th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}"
+                    style="color:#6b7280;font-size:13px;"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="7" style="text-align:center;color:#9ca3af;padding:32px;">Пользователей нет</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(pageTitle='Отзывы')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar(activePage='feedback')}"></div>
+<div class="main">
+    <div class="page-header"><h1>Отзывы клиентов</h1></div>
+
+    <div class="card">
+        <div th:if="${#lists.isEmpty(feedbacks)}" style="color:#6b7280;font-size:14px;">Отзывов пока нет</div>
+        <table th:if="${!#lists.isEmpty(feedbacks)}">
+            <thead>
+            <tr><th>Клиент</th><th>Оценка</th><th>Отзыв</th><th>Дата</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="fb : ${feedbacks}">
+                <td th:text="${fb.userName}"></td>
+                <td>
+                    <span th:text="${fb.rating} + ' ★'"
+                          th:style="${fb.rating >= 4} ? 'color:#f59e0b' : (${fb.rating} == 3 ? 'color:#6b7280' : 'color:#ef4444')"></span>
+                </td>
+                <td th:text="${fb.text}"></td>
+                <td th:text="${#temporals.format(fb.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Simple pagination -->
+    <div style="display:flex;gap:8px;margin-top:16px;" th:if="${#lists.size(feedbacks) >= 20}">
+        <a th:href="@{/admin/feedback(page=${page - 1})}" class="btn btn-secondary btn-sm"
+           th:if="${page > 0}">← Назад</a>
+        <a th:href="@{/admin/feedback(page=${page + 1})}" class="btn btn-secondary btn-sm">Вперёд →</a>
+    </div>
+</div>
+</body>
+</html>
